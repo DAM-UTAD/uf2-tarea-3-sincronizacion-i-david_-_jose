@@ -1,3 +1,4 @@
+package package_a;
 class Puerta {
 	public static boolean abierta;
 	public static int contador;
