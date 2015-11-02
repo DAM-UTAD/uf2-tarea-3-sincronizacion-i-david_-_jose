@@ -3,6 +3,12 @@ package ejercicio_2_itv;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Clase coche.
+ * 
+ * @author David Navarro de la Morena
+ * @version 1.0 - 2/11/2015
+ */
 class Coche {
 	private byte id;
 	private byte time;
@@ -21,11 +27,35 @@ class Coche {
 	}
 }
 
+/**
+ * Clase Puesto.
+ * 
+ * @author David Navarro de la Morena
+ * @version 1.0 - 2/11/2015
+ */
 class Puesto {
 	private byte id;
 
 }
 
+class Revision extends Thread {
+	private Semaphore semaforo;
+
+	Revision(Semaphore semaforo) {
+		this.semaforo = semaforo;
+	}
+
+	public void run() {
+
+	}
+}
+
+/**
+ * Main principal de la clase.
+ * 
+ * @author David Navarro de la Morena
+ * @version 1.0 - 2/11/2015
+ */
 public class ITV {
 	private static ArrayList<Coche> coches;
 	private static ArrayList<Puesto> puestos;
@@ -38,6 +68,10 @@ public class ITV {
 		initialize();
 
 		semaforo = new Semaphore(puestos.size());
+
+		for (int i = 0; i < coches.size(); i++) {
+			Revision rv = new Revision(semaforo);
+		}
 	}
 
 	private static void initialize() {
