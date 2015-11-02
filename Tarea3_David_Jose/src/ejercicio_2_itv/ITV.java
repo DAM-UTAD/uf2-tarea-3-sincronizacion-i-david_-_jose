@@ -1,6 +1,7 @@
 package ejercicio_2_itv;
 
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 class Coche {
 	private byte id;
@@ -28,12 +29,15 @@ class Puesto {
 public class ITV {
 	private static ArrayList<Coche> coches;
 	private static ArrayList<Puesto> puestos;
+	private static Semaphore semaforo;
 
 	public static void main(String[] args) {
 		coches = new ArrayList<Coche>();
 		puestos = new ArrayList<Puesto>();
 
 		initialize();
+
+		semaforo = new Semaphore(puestos.size());
 	}
 
 	private static void initialize() {
@@ -41,7 +45,7 @@ public class ITV {
 		byte puestosTmp;
 
 		cochesTmp = (byte) Math.floor(Math.random() * (20 - (50 + 1)) + (50));
-		puestosTmp = (byte) Math.floor(Math.random() * (1 - (5 + 1)) + (5));
+		puestosTmp = (byte) Math.floor(Math.random() * (2 - (6 + 1)) + (6));
 
 		for (byte i = 0; i < cochesTmp; i++) {
 			byte time = (byte) Math.floor(Math.random() * (10 - (100 + 1)) + (100));
