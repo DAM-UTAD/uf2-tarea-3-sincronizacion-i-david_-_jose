@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 /**
- * Clase coche.
+ * Hilo coche.
  * 
  * @author David Navarro de la Morena
  * @version 1.0 - 2/11/2015
  */
-class Coche {
+class Coche extends Thread {
 	private byte id;
 	private byte time;
 
@@ -18,35 +18,55 @@ class Coche {
 		this.time = time;
 	}
 
-	public byte getID() {
-		return id;
+	public void run() {
+		try {
+			sleep(time);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public byte getTime() {
-		return time;
+	public byte getID() {
+		return id;
 	}
 }
 
 /**
- * Clase Puesto.
+ * Hilo Puesto.
  * 
  * @author David Navarro de la Morena
  * @version 1.0 - 2/11/2015
  */
-class Puesto {
-	private byte id;
-
-}
-
-class Revision extends Thread {
+class Puesto extends Thread {
+	private ITV itv;
+	private ArrayList<Coche> coches;
 	private Semaphore semaforo;
+	private byte id;
+	private byte contadorTmp;
 
-	Revision(Semaphore semaforo) {
+	Puesto(byte id, Semaphore semaforo, ArrayList<Coche> coches) {
+		this.coches = coches;
 		this.semaforo = semaforo;
+		this.id = id;
 	}
 
 	public void run() {
+		try {
+			itv.semaforo.acquire();
+			contadorTmp = itv.contador;
+			itv.contador++;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
+		try {
+			coches.get(contadorTmp).run();
+			coches.get(0).join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("El puesto " + id + " ha atendido el vehiculo " + coches.get(contadorTmp).getID());
+		itv.semaforo.release();
 	}
 }
 
@@ -59,19 +79,25 @@ class Revision extends Thread {
 public class ITV {
 	private static ArrayList<Coche> coches;
 	private static ArrayList<Puesto> puestos;
-	private static Semaphore semaforo;
+	static Semaphore semaforo;
+	static byte contador;
 
 	public static void main(String[] args) {
 		coches = new ArrayList<Coche>();
 		puestos = new ArrayList<Puesto>();
 
 		initialize();
+		contador = 0;
 
 		semaforo = new Semaphore(puestos.size());
 
-		for (int i = 0; i < coches.size(); i++) {
-			Revision rv = new Revision(semaforo);
-		}
+		do {
+			for (int i = 0; i < puestos.size(); i++) {
+				if (contador < coches.size())
+					puestos.get(i).run();
+			}
+		} while (contador < coches.size());
+		System.out.println("\nSe cierra la ITV");
 	}
 
 	private static void initialize() {
@@ -88,9 +114,10 @@ public class ITV {
 		}
 
 		for (byte i = 0; i < puestosTmp; i++) {
-			Puesto puesto = new Puesto();
+			Puesto puesto = new Puesto((byte) (i + 1), semaforo, coches);
 			puestos.add(puesto);
 		}
-		System.out.println("Se han creado " + coches.size() + " coches y hay " + puestos.size() + " puestos.");
+		System.out.println("Hay " + coches.size() + " vehiculos que seran atendidos en " + puestos.size()
+				+ " puestos de inspeccion\n");
 	}
 }
