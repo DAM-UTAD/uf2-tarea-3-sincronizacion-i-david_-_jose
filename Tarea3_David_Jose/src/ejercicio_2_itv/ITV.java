@@ -40,6 +40,7 @@ class Coche extends Thread {
 class Puesto extends Thread {
 	private ITV itv;
 	private ArrayList<Coche> coches;
+	@SuppressWarnings("unused")
 	private Semaphore semaforo;
 	private byte id;
 	private byte contadorTmp;
@@ -50,6 +51,7 @@ class Puesto extends Thread {
 		this.id = id;
 	}
 
+	@SuppressWarnings("static-access")
 	public void run() {
 		try {
 			itv.semaforo.acquire();
