@@ -21,6 +21,7 @@ class Coche extends Thread {
 	public void run() {
 		try {
 			sleep(time);
+			// System.out.println(time);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -28,6 +29,10 @@ class Coche extends Thread {
 
 	public byte getID() {
 		return id;
+	}
+
+	public byte getTime() {
+		return time;
 	}
 }
 
@@ -51,24 +56,33 @@ class Puesto extends Thread {
 		this.id = id;
 	}
 
-	@SuppressWarnings("static-access")
 	public void run() {
-		try {
-			itv.semaforo.acquire();
-			contadorTmp = itv.contador;
-			itv.contador++;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		nextCar();
+	}
 
-		try {
-			coches.get(contadorTmp).run();
-			coches.get(0).join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	@SuppressWarnings("static-access")
+	private void nextCar() {
+
+		if (itv.contador < (coches.size())) {
+			try {
+				itv.semaforo.acquire();
+				contadorTmp = itv.contador;
+				itv.contador++;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				coches.get(contadorTmp).run();
+				coches.get(0).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println("El puesto " + id + " ha atendido el vehiculo " + coches.get(contadorTmp).getID());
+			itv.semaforo.release();
+
+			nextCar();
 		}
-		System.out.println("El puesto " + id + " ha atendido el vehiculo " + coches.get(contadorTmp).getID());
-		itv.semaforo.release();
 	}
 }
 
@@ -93,12 +107,17 @@ public class ITV {
 
 		semaforo = new Semaphore(puestos.size());
 
-		do {
-			for (int i = 0; i < puestos.size(); i++) {
-				if (contador < coches.size())
-					puestos.get(i).run();
+		for (int i = 0; i < puestos.size(); i++) {
+			puestos.get(i).start();
+		}
+		for (int i = 0; i < puestos.size(); i++){
+			try {
+				puestos.get(i).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} while (contador < coches.size());
+		}
+		
 		System.out.println("\nSe cierra la ITV");
 	}
 
